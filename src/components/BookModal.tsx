@@ -16,7 +16,8 @@ import useAddReview from "../hooks/useAddReview";
 import AuthContext from "../context/AuthContext";
 
 const BookModal: React.FC<IBookModalProps> = ({ open, onClose, book }) => {
-  const { reviews, setReviews } = useFetchReviews(book?._id || "");
+  const { reviews, setReviews, averageRating, setAverageRating } =
+    useFetchReviews(book?._id || "");
   const { addNewReview, loading, error } = useAddReview(book?._id || "");
   const [newReview, setNewReview] = useState<string>("");
   const [rating, setRating] = useState<number | null>(null);
@@ -33,6 +34,9 @@ const BookModal: React.FC<IBookModalProps> = ({ open, onClose, book }) => {
       try {
         const addedReview = await addNewReview(review);
         setReviews([...reviews, addedReview]);
+        const newAverageRating =
+          (averageRating * reviews.length + rating) / (reviews.length + 1);
+        setAverageRating(newAverageRating);
         setNewReview("");
         setRating(null);
       } catch (err) {
@@ -76,9 +80,18 @@ const BookModal: React.FC<IBookModalProps> = ({ open, onClose, book }) => {
             <Typography variant="body1">
               {book.description || "No description available"}
             </Typography>
-            <Typography variant="body2" color="textSecondary">
-              Pages: {book.pages}
-            </Typography>
+            <Box
+              mt={2}
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+              }}
+            >
+              <Typography>Pages: {book.pages}</Typography>
+              <Typography>Average Rating: {averageRating}</Typography>
+            </Box>
+
             <Box mt={2}>
               <Typography variant="h6">Reviews</Typography>
               {reviews.length === 0 ? (
